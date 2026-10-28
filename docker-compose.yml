@@ -1,0 +1,40 @@
+
+  services:
+    postgres:
+      image: postgres:16
+      container_name: auth-service-postgres
+      environment:
+        POSTGRES_DB: authdb
+        POSTGRES_USER: ${DB_LOGIN}
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - "5433:5432"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${DB_LOGIN} -d ${DB_NAME}"]
+        interval: 5s
+        timeout: 3s
+        retries: 10
+
+    auth-service:
+      build: .
+      container_name: auth-service
+      ports:
+        - "8082:8082"
+      volumes:
+        - ./keys:/app/keys:ro
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/authdb
+        SPRING_DATASOURCE_USERNAME: ${DB_LOGIN}
+        SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+        JWT_ACCESS: ${JWT_ACCESS}
+        JWT_REFRESH: ${JWT_REFRESH}
+      depends_on:
+        postgres:
+          condition: service_healthy
+
+  volumes:
+    postgres_data:
+
+
