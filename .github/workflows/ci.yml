@@ -2,48 +2,19 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["**"]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: babyface1
-      POSTGRES_DB: authdb
-      DB_NAME: authdb
-      DB_URL: jdbc:postgresql://localhost:5433/authdb
-      DB_PASSWORD: babyface1
-      DB_LOGIN: postgres
-      JWT_ACCESS: 900000
-      JWT_REFRESH: 604800000
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Create .env file for Docker Compose
-        run: |
-          echo "POSTGRES_USER=$POSTGRES_USER" >> .env
-          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
-          echo "POSTGRES_DB=$POSTGRES_DB" >> .env
-          echo "DB_NAME=$DB_NAME" >> .env
-          echo "DB_URL=$DB_URL" >> .env
-          echo "DB_PASSWORD=$DB_PASSWORD" >> .env
-          echo "DB_LOGIN=$DB_LOGIN" >> .env
-          echo "JWT_ACCESS=$JWT_ACCESS" >> .env
-          echo "JWT_REFRESH=$JWT_REFRESH" >> .env
-
-      - name: Start Docker containers
-        run: docker compose up -d
-
-      - name: Check Postgres Logs
-        if: failure()
-        run: docker compose logs auth-service-postgres
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -60,3 +31,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.AUTHSERVICETOKEN }}
         run: ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=NikitaKostyukovich_FintechPlatform-AuthService -Dsonar.organization=nikitakostyukovich
+
+      - name: Build Docker image
+        run: docker build -t auth-service:${{ github.sha }} .
