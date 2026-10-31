@@ -58,5 +58,5 @@ jobs:
       - name: Analyze with SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.AUTHSERVICETOKEN }}
         run: ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=NikitaKostyukovich_FintechPlatform-AuthService -Dsonar.organization=nikitakostyukovich
