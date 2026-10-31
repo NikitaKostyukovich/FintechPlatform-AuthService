@@ -4,7 +4,6 @@ import com.innowise.authservice.dto.request.LoginRequestDto;
 import com.innowise.authservice.dto.response.LoginResponseDto;
 import com.innowise.authservice.dto.request.RefreshRequestDto;
 import com.innowise.authservice.dto.request.RegisterRequestDto;
-import com.innowise.authservice.dto.*;
 import com.innowise.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

@@ -6,7 +6,6 @@ import com.innowise.authservice.dto.request.RegisterRequestDto;
 import com.innowise.authservice.dto.response.AuthResponseDto;
 import com.innowise.authservice.dto.response.LoginResponseDto;
 import com.innowise.authservice.dto.response.ValidateResponseDto;
-import com.innowise.authservice.dto.*;
 import com.innowise.authservice.entity.Credential;
 import com.innowise.authservice.entity.RefreshToken;
 import com.innowise.authservice.exception.InvalidCredentialsException;
