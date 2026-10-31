@@ -32,6 +32,7 @@
         <sonar.organization>nikitakostyukovich</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.projectKey>NikitaKostyukovich_FintechPlatform-AuthService</sonar.projectKey>
+        <sonar.coverage.exclusions>**/dto/**, **/entity/**, **/exception/ErrorResponse.java, **/*Application.java</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
