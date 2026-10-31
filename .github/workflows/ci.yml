@@ -17,6 +17,10 @@ jobs:
           fetch-depth: 0
 
       - name: Start Docker containers
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: babyface1
+          POSTGRES_DB: authdb
         run: docker compose up -d
 
       - name: Set up JDK 21
