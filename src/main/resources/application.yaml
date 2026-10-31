@@ -14,3 +14,14 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 server:
   port: 8082
+jwt:
+  private-key-path: ${JWT_PRIVATE_KEY_PATH:keys/private_key.pem}
+  public-key-path: ${JWT_PUBLIC_KEY_PATH:keys/public_key.pem}
+  access-token:
+    expiration: ${JWT_ACCESS}
+  refresh-token:
+    expiration: ${JWT_REFRESH}
+application:
+  client:
+    user-service:
+      url: https://localhost:8081
