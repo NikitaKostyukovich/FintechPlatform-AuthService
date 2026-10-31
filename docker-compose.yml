@@ -4,7 +4,7 @@
       image: postgres:16
       container_name: auth-service-postgres
       environment:
-        POSTGRES_DB: authdb
+        POSTGRES_DB: ${DB_NAME}
         POSTGRES_USER: ${DB_LOGIN}
         POSTGRES_PASSWORD: ${DB_PASSWORD}
       ports:
@@ -25,7 +25,7 @@
       volumes:
         - ./keys:/app/keys:ro
       environment:
-        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/authdb
+        SPRING_DATASOURCE_URL: ${DB_URL}
         SPRING_DATASOURCE_USERNAME: ${DB_LOGIN}
         SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
         JWT_ACCESS: ${JWT_ACCESS}
