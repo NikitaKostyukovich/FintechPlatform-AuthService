@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-refresh-tokens-table
+      author: nikita_kostyukovich
+      changes:
+        - createTable:
+            tableName: refresh_tokens
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: jti
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: refresh_tokens
+            baseColumnNames: user_id
+            referencedTableName: user_credentials
+            referencedColumnNames: user_id
+            constraintName: fk_refresh_tokens_credentials
+            onDelete: CASCADE
+        - createIndex:
+            tableName: refresh_tokens
+            indexName: idx_refresh_tokens_user_id
+            columns:
+              - column:
+                  name: user_id
