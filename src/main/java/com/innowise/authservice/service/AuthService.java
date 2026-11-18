@@ -3,6 +3,7 @@ package com.innowise.authservice.service;
 import com.innowise.authservice.client.UserServiceClient;
 import com.innowise.authservice.dto.request.LoginRequestDto;
 import com.innowise.authservice.dto.request.RegisterRequestDto;
+import com.innowise.authservice.dto.request.UserCreateRequestDto;
 import com.innowise.authservice.dto.response.AuthResponseDto;
 import com.innowise.authservice.dto.response.LoginResponseDto;
 import com.innowise.authservice.dto.response.ValidateResponseDto;
@@ -17,13 +18,14 @@ import com.innowise.authservice.repository.CredentialRepository;
 import com.innowise.authservice.repository.RefreshTokenRepository;
 import com.innowise.authservice.role.Role;
 import io.jsonwebtoken.Claims;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,17 +40,19 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final TransactionTemplate transactionTemplate;
 
-    public AuthService(CredentialRepository credentialRepository, UserServiceClient userServiceClient, CredentialMapper credentialMapper, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenRepository refreshTokenRepository) {
+    public AuthService(CredentialRepository credentialRepository, UserServiceClient userServiceClient, CredentialMapper credentialMapper, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenRepository refreshTokenRepository, TransactionTemplate transactionTemplate) {
         this.credentialRepository = credentialRepository;
         this.userServiceClient = userServiceClient;
         this.credentialMapper = credentialMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.transactionTemplate = transactionTemplate;
     }
 
-    @Transactional
+
     public Long register(RegisterRequestDto dto) {
         log.info("Attempting to register new user with login: {}", dto.login());
 
@@ -58,9 +62,9 @@ public class AuthService {
         }
 
         String hashedPassword = passwordEncoder.encode(dto.password());
-
+        UserCreateRequestDto convertedDto = credentialMapper.toUserCreateDto(dto);
         log.debug("Calling UserServiceClient to create user profile for '{}'", dto.login());
-        AuthResponseDto response = userServiceClient.createUser(dto);
+        AuthResponseDto response = userServiceClient.createUser(convertedDto);
 
         if (response == null || response.id() == null) {
             log.error("UserServiceClient returned empty response or null ID during registration of '{}'", dto.login());
@@ -71,8 +75,10 @@ public class AuthService {
         log.info("User profile created successfully in UserService with ID: {}", userId);
 
         try {
-            Credential newCredential = credentialMapper.toEntity(dto, userId, hashedPassword);
-            credentialRepository.save(newCredential);
+            transactionTemplate.executeWithoutResult(status -> {
+                Credential newCredential = credentialMapper.toEntity(dto, userId, hashedPassword);
+                credentialRepository.save(newCredential);
+            });
             log.info("Credentials saved successfully for user ID: {}", userId);
             return userId;
 
@@ -86,7 +92,7 @@ public class AuthService {
             throw ex;
         }
     }
-
+    @Transactional
     public LoginResponseDto login(LoginRequestDto dto) {
         log.info("Login attempt for user: {}", dto.login());
 
@@ -98,7 +104,7 @@ public class AuthService {
 
         if (!passwordEncoder.matches(dto.password(), credential.getPasswordHash())) {
             log.warn("Login failed: Invalid password for user '{}'", dto.login());
-            throw new BadCredentialsException("Invalid login or password");
+            throw new InvalidCredentialsException("Invalid login or password");
         }
 
         log.info("User '{}' (ID: {}) logged in successfully", dto.login(), credential.getUserId());
@@ -140,27 +146,6 @@ public class AuthService {
 
         log.info("Tokens successfully refreshed for user ID: {}", userId);
         return issueTokens(credential);
-    }
-
-    public ValidateResponseDto validate(String token) {
-        log.debug("Validating access token");
-        try {
-            Claims claims = jwtService.parse(token);
-            if (!JwtService.TYPE_ACCESS.equals(claims.get("token_type", String.class))) {
-                log.warn("Token validation failed: Provided token is not an access token");
-                return new ValidateResponseDto(false, null, null);
-            }
-
-            Long userId = ((Number) claims.get("user_id")).longValue();
-            Role role = Role.valueOf(claims.get("role", String.class));
-
-            log.debug("Token validated successfully for user ID: {}", userId);
-            return new ValidateResponseDto(true, userId, role);
-
-        } catch (InvalidTokenException e) {
-            log.warn("Token validation failed due to invalid token format or expiration: {}", e.getMessage());
-            return new ValidateResponseDto(false, null, null);
-        }
     }
 
     private LoginResponseDto issueTokens(Credential credential) {

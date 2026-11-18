@@ -1,5 +1,7 @@
 package com.innowise.authservice.config;
 
+import com.innowise.authservice.role.Role;
+import com.innowise.authservice.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,6 +9,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
+import java.util.function.Supplier;
 
 @Configuration
 public class RestClientConfig {
@@ -21,5 +24,9 @@ public class RestClientConfig {
                 .baseUrl(userServiceUrl)
                 .requestFactory(factory)
                 .build();
+    }
+    @Bean
+    public Supplier<String> tokenProvider(JwtService jwtService){
+        return ()->jwtService.generateAccessToken(0L, Role.ADMIN);
     }
 }

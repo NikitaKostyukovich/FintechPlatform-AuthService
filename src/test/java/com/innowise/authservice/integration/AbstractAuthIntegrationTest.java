@@ -14,11 +14,13 @@ import com.innowise.authservice.support.TestKeys;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-
+import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +28,7 @@ import java.time.LocalDate;
 
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public abstract class AbstractAuthIntegrationTest {
 
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16");
@@ -63,6 +66,10 @@ public abstract class AbstractAuthIntegrationTest {
     protected RefreshTokenRepository refreshTokenRepository;
     @Autowired
     protected PasswordEncoder passwordEncoder;
+    @Autowired
+    protected MockMvc mockMvc;
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @BeforeEach
     void cleanUp() {

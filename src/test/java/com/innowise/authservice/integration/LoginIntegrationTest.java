@@ -48,7 +48,7 @@ class LoginIntegrationTest extends AbstractAuthIntegrationTest {
     void wrongPassword_throwsInvalidCredentials() {
         saveCredential(1L, "ivan", "secret123", Role.USER);
 
-        assertThrows(BadCredentialsException.class,
+        assertThrows(InvalidCredentialsException.class,
                 () -> authService.login(new LoginRequestDto("ivan", "wrong-password")));
         assertEquals(0, refreshTokenRepository.count());
     }

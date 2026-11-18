@@ -35,6 +35,7 @@ public class JwtService {
 
     public static final String TYPE_ACCESS = "access";
     public static final String TYPE_REFRESH = "refresh";
+    private static final String KEY_ID = "auth-service-key";
 
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
@@ -108,7 +109,7 @@ public class JwtService {
         String jti = UUID.randomUUID().toString();
 
         String token = Jwts.builder()
-                .header().keyId("auth-service-key").and()
+                .header().keyId(KEY_ID).and()
                 .id(jti)
                 .claim("user_id", userId)
                 .claim("role", role.name())
@@ -142,7 +143,7 @@ public class JwtService {
     public Map<String, Object> getJwks() {
         log.debug("Generating JWKS (JSON Web Key Set) for external services");
         RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) publicKey)
-                .keyID("auth-service-key")
+                .keyID(KEY_ID)
                 .algorithm(JWSAlgorithm.RS256)
                 .build();
         return new JWKSet(rsaKey).toJSONObject();

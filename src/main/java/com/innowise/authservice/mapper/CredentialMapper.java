@@ -1,6 +1,7 @@
 package com.innowise.authservice.mapper;
 
 import com.innowise.authservice.dto.request.RegisterRequestDto;
+import com.innowise.authservice.dto.request.UserCreateRequestDto;
 import com.innowise.authservice.entity.Credential;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,4 +12,5 @@ public interface CredentialMapper {
     @Mapping(target = "login", source = "dto.login")
     @Mapping(target = "role", constant = "USER")
     Credential toEntity(RegisterRequestDto dto, Long userId, String passwordHash);
+    UserCreateRequestDto toUserCreateDto(RegisterRequestDto dto);
 }

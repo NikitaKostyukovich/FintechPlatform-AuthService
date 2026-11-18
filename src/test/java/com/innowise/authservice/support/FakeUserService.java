@@ -64,6 +64,12 @@ public class FakeUserService {
 
     private void handle(HttpExchange exchange) throws IOException {
         try (exchange) {
+            String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")
+                    || authHeader.substring("Bearer ".length()).isBlank()) {
+                send(exchange, 401, "{\"error\":\"Unauthorized\"}");
+                return;
+            }
             String method = exchange.getRequestMethod();
             String path = exchange.getRequestURI().getPath();
 

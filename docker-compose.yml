@@ -25,7 +25,8 @@
       volumes:
         - ./keys:/app/keys:ro
       environment:
-        SPRING_DATASOURCE_URL: ${DB_URL}
+        USER_SERVICE_URL: http://localhost:8081
+        SPRING_PROFILES_ACTIVE: docker
         SPRING_DATASOURCE_USERNAME: ${DB_LOGIN}
         SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
         JWT_ACCESS: ${JWT_ACCESS}
